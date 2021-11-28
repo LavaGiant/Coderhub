@@ -2,6 +2,9 @@
   "name": "coderhub",
   "version": "1.0.0",
   "main": "index.js",
+  "scripts": {
+    "start": "nodemon src"
+  },
   "license": "MIT",
   "dependencies": {
     "koa": "^2.13.4",
