@@ -1,5 +1,8 @@
 const { USERNAME_OR_PASSWORD_IS_REQUIRED, USER_ALREADY_EXISTS } = require("../constants/error-type")
+
 const { getUserByUsername } = require("../service/user.service")
+
+const md5password = require("../utils/password-handle")
 
 const verifyUser = async (ctx, next) => {
   const { username, password } = ctx.request.body
@@ -17,6 +20,14 @@ const verifyUser = async (ctx, next) => {
   await next()
 }
 
+// 密码加密
+const handlePassword = async (ctx, next) => {
+  const { username, password } = ctx.request.body
+  ctx.request.body.password = md5password(md5password(`${username}malphite${password}`))
+  await next()
+}
+
 module.exports = {
-  verifyUser
+  verifyUser,
+  handlePassword
 }
