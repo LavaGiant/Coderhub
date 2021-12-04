@@ -6,7 +6,7 @@ class UserController {
     // 查询数据
     const result = await create(user)
     // 返回数据
-    ctx.body = result
+    ctx.body = `${user.username}注册成功`
   }
 }
 

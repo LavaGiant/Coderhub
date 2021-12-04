@@ -1,4 +1,4 @@
-const connection = require('../app/database')
+const connection = require('../database')
 
 class UserService {
   async create({ username, password }) {
