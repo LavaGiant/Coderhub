@@ -1,4 +1,10 @@
-const { USERNAME_OR_PASSWORD_IS_REQUIRED, USER_ALREADY_EXISTS, USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT } = require("../constants/error-type")
+const {
+  USERNAME_OR_PASSWORD_IS_REQUIRED,
+  USER_ALREADY_EXISTS,
+  USER_DOES_NOT_EXISTS,
+  PASSWORD_IS_INCORRECT,
+  NOT_AUTHORIZATION
+} = require("../constants/error-type")
 
 const errorHandler = (error, ctx) => {
   let message, status;
@@ -18,6 +24,10 @@ const errorHandler = (error, ctx) => {
     case PASSWORD_IS_INCORRECT:
       status = 400
       message = '密码错误！'
+      break;
+    case NOT_AUTHORIZATION:
+      status = 401
+      message = '无效Token！'
       break;
     default:
       status = 404
