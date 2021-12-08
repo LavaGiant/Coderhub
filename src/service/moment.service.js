@@ -26,12 +26,18 @@ class MomentService {
       ${sqlFragment}
       LIMIT ?, ?;
     `
-    try {
-      const [result] = await connection.execute(statement, [(pageNum - 1).toString(), pageSize])
-      return result
-    } catch (error) {
-      console.log(error)
-    }
+    const [result] = await connection.execute(statement, [(pageSize * (pageNum - 1)).toString(), pageSize])
+    return result
+  }
+  async update(momentId, content) {
+    const statement = `UPDATE moment SET content = ? WHERE id = ?`
+    const [result] = await connection.execute(statement, [content, momentId])
+    return result
+  }
+  async remove(momentId) {
+    const statement = `DELETE FROM moment WHERE id = ?`
+    const [result] = await connection.execute(statement, [momentId])
+    return result
   }
 }
 

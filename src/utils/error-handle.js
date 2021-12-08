@@ -3,7 +3,8 @@ const {
   USER_ALREADY_EXISTS,
   USER_DOES_NOT_EXISTS,
   PASSWORD_IS_INCORRECT,
-  NOT_AUTHORIZATION
+  NOT_AUTHORIZATION,
+  NOT_PERMISSION
 } = require("../constants/error-type")
 
 const errorHandler = (error, ctx) => {
@@ -28,6 +29,10 @@ const errorHandler = (error, ctx) => {
     case NOT_AUTHORIZATION:
       status = 401
       message = '无效Token！'
+      break;
+    case NOT_PERMISSION:
+      status = 401
+      message = '没有权限！'
       break;
     default:
       status = 404

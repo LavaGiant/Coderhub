@@ -2,7 +2,8 @@ const jwt = require("jsonwebtoken")
 
 const { PUBLIC_KEY } = require("../app/keys")
 
-const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION } = require("../constants/error-type")
+const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION, NOT_PERMISSION } = require("../constants/error-type")
+const { checkMoment } = require("../service/auth.service")
 const { getUserByUsername } = require("../service/user.service")
 
 const verifyLogin = async (ctx, next) => {
@@ -33,11 +34,23 @@ const verifyAuth = async (ctx, next) => {
     await next()
   } catch (err) {
     const error = new Error(NOT_AUTHORIZATION)
-    ctx.app.emit('error', error, ctx)
+    return ctx.app.emit('error', error, ctx)
   }
+}
+
+const verifyPermission = async (ctx, next) => {
+  const { momentId } = ctx.params
+  const userid = ctx.user.id
+  const isPermission = await checkMoment(momentId, userid)
+  if(!isPermission) {
+    const error = new Error(NOT_PERMISSION)
+    return ctx.app.emit('error', error, ctx)
+  }
+  await next()
 }
 
 module.exports = {
   verifyLogin,
-  verifyAuth
+  verifyAuth,
+  verifyPermission
 }
