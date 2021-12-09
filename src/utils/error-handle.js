@@ -4,7 +4,8 @@ const {
   USER_DOES_NOT_EXISTS,
   PASSWORD_IS_INCORRECT,
   NOT_AUTHORIZATION,
-  NOT_PERMISSION
+  NOT_PERMISSION,
+  NOT_SAME_COMMENT
 } = require("../constants/error-type")
 
 const errorHandler = (error, ctx) => {
@@ -33,6 +34,10 @@ const errorHandler = (error, ctx) => {
     case NOT_PERMISSION:
       status = 401
       message = '没有权限！'
+      break;
+    case NOT_SAME_COMMENT:
+      status = 406
+      message = '回复的评论不是在同一动态下！'
       break;
     default:
       status = 404

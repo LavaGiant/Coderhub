@@ -4,7 +4,7 @@ class UserController {
     // 获取用户数据
     const user = ctx.request.body
     // 查询数据
-    const result = await create(user)
+    await create(user)
     // 返回数据
     ctx.body = `${user.username}注册成功`
   }

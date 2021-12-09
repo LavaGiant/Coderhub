@@ -2,8 +2,8 @@ const jwt = require("jsonwebtoken")
 
 const { PUBLIC_KEY } = require("../app/keys")
 
-const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION, NOT_PERMISSION } = require("../constants/error-type")
-const { checkMoment } = require("../service/auth.service")
+const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION, NOT_PERMISSION, NOT_SAME_COMMENT } = require("../constants/error-type")
+const { checkResource, checkCommentReply } = require("../service/auth.service")
 const { getUserByUsername } = require("../service/user.service")
 
 const verifyLogin = async (ctx, next) => {
@@ -39,11 +39,24 @@ const verifyAuth = async (ctx, next) => {
 }
 
 const verifyPermission = async (ctx, next) => {
-  const { momentId } = ctx.params
+  const [resourceKey] = Object.keys(ctx.params)
+  const tableName = resourceKey.replace('Id', '')
+  const resourceId = ctx.params[resourceKey]
   const userid = ctx.user.id
-  const isPermission = await checkMoment(momentId, userid)
-  if(!isPermission) {
+  const isPermission = await checkResource(tableName, resourceId, userid)
+  if (!isPermission) {
     const error = new Error(NOT_PERMISSION)
+    return ctx.app.emit('error', error, ctx)
+  }
+  await next()
+}
+
+const verifyReplySameComment = async (ctx, next) => {
+  const { commentId } = ctx.params
+  const { momentId } = ctx.request.body
+  const isSameComment = await checkCommentReply(commentId, momentId)
+  if (!isSameComment) {
+    const error = new Error(NOT_SAME_COMMENT)
     return ctx.app.emit('error', error, ctx)
   }
   await next()
@@ -52,5 +65,6 @@ const verifyPermission = async (ctx, next) => {
 module.exports = {
   verifyLogin,
   verifyAuth,
-  verifyPermission
+  verifyPermission,
+  verifyReplySameComment
 }

@@ -5,7 +5,7 @@ class MomentController {
     const userId = ctx.user.id
     const { content } = ctx.request.body
     // 将数据插入到数据库
-    const res = await create(userId, content)
+    await create(userId, content)
     ctx.body = `插入 ${content} 动态成功`
   }
   async detail(ctx) {
@@ -20,12 +20,12 @@ class MomentController {
   async update(ctx) {
     const { momentId } = ctx.params
     const { content } = ctx.request.body
-    const res = await update(momentId, content)
+    await update(momentId, content)
     ctx.body = `${content}修改成功`
   }
   async remove(ctx) {
     const { momentId } = ctx.params
-    const res = await remove(momentId)
+    await remove(momentId)
     ctx.body = `删除成功`
   }
 }
