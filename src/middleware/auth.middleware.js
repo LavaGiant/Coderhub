@@ -2,8 +2,8 @@ const jwt = require("jsonwebtoken")
 
 const { PUBLIC_KEY } = require("../app/keys")
 
-const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION, NOT_PERMISSION, NOT_SAME_COMMENT } = require("../constants/error-type")
-const { checkResource, checkCommentReply } = require("../service/auth.service")
+const { USER_DOES_NOT_EXISTS, PASSWORD_IS_INCORRECT, NOT_AUTHORIZATION, NOT_PERMISSION } = require("../constants/error-type")
+const { checkResource } = require("../service/auth.service")
 const { getUserByUsername } = require("../service/user.service")
 
 const verifyLogin = async (ctx, next) => {
@@ -51,20 +51,8 @@ const verifyPermission = async (ctx, next) => {
   await next()
 }
 
-const verifyReplySameComment = async (ctx, next) => {
-  const { commentId } = ctx.params
-  const { momentId } = ctx.request.body
-  const isSameComment = await checkCommentReply(commentId, momentId)
-  if (!isSameComment) {
-    const error = new Error(NOT_SAME_COMMENT)
-    return ctx.app.emit('error', error, ctx)
-  }
-  await next()
-}
-
 module.exports = {
   verifyLogin,
   verifyAuth,
-  verifyPermission,
-  verifyReplySameComment
+  verifyPermission
 }
