@@ -15,7 +15,11 @@ class MomentService {
   }
   async getMomentById(id) {
     const statement = `
-      ${sqlFragment}
+      SELECT 
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime, 
+        JSON_OBJECT("id", u.id, "username", u.username, "avatar", u.avatar_url) user
+      FROM moment m
+      LEFT JOIN users u ON m.user_id = u.id
       WHERE m.id = ?;
     `
     const [result] = await connection.execute(statement, [id])

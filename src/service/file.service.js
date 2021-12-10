@@ -1,7 +1,12 @@
 const connection = require('../database')
 class FileService {
   async saveAvatarInfo(filename, mimetype, size, userId) {
-    const statement = `INSERT INTO avatar (filename, mimetype, size, user_id) VALUES (?, ?, ?, ?);`
+    const searchStatement = `SELECT * FROM avatar WHERE user_id = ?;`
+    const [avatarInfo] = await connection.execute(searchStatement, [userId])
+    const statement = avatarInfo.length ?
+      `UPDATE avatar SET filename = ?, mimetype = ?, size = ? WHERE user_id = ?;`
+      :
+      `INSERT INTO avatar (filename, mimetype, size, user_id) VALUES (?, ?, ?, ?);`
     const [result] = await connection.execute(statement, [filename, mimetype, size, userId])
     return result
   }
