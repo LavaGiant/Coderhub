@@ -1,3 +1,6 @@
+const { createReadStream } = require('fs')
+const { getFileByFilename } = require('../service/file.service')
+const { PICTURE_PATH } = require('../constants/path-type')
 const { create, getMomentById, getMomentList, update, remove, checkLabelExists, addLabel } = require("../service/moment.service")
 
 class MomentController {
@@ -36,6 +39,16 @@ class MomentController {
       isExist || await addLabel(momentId, id)
     }
     ctx.body = '标签添加成功'
+  }
+  async fileInfo(ctx) {
+    let { filename } = ctx.params
+    const fileInfo = await getFileByFilename(filename)
+    const {type} = ctx.query
+    if(['small', 'middle', 'large'].some(item => item === type)) {
+      filename = filename + '-' + type
+    }
+    ctx.response.set('content-type', fileInfo.mimetype)
+    ctx.body = createReadStream(`${PICTURE_PATH}/${filename}`)
   }
 }
 

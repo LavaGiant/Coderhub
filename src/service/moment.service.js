@@ -1,11 +1,5 @@
 const connection = require('../database')
-
-const sqlFragment = `
-  SELECT 
-    m.id id, m.content content, m.createAt createTime, m.updateAt updateTime, JSON_OBJECT("id", u.id, "username", u.username) user
-  FROM moment m
-  LEFT JOIN users u ON m.user_id = u.id
-`
+const { APP_HOST, APP_PORT } = require('../database/config')
 
 class MomentService {
   async create(userId, content) {
@@ -17,17 +11,39 @@ class MomentService {
     const statement = `
       SELECT 
         m.id id, m.content content, m.createAt createTime, m.updateAt updateTime, 
-        JSON_OBJECT("id", u.id, "username", u.username, "avatar", u.avatar_url) user
+        JSON_OBJECT("id", u.id, "username", u.username, "avatar", u.avatar_url) user,
+        IF(COUNT(l.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id', l.id, 'name', l.name)
+        ),NULL) labels,
+        (SELECT IF(COUNT(c.id),JSON_ARRAYAGG(
+          JSON_OBJECT('id', c.id, 'content', c.content, 'commentId', c.comment_id, 'createTime', c.createAt,
+                      'user', JSON_OBJECT('id', cu.id, 'name', cu.username, 'avatarUrl', cu.avatar_url))
+        ),NULL) FROM comment c LEFT JOIN users cu ON c.user_id = cu.id WHERE m.id = c.moment_id) comments,
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_HOST}:${APP_PORT}/moment/images/', file.filename)) FROM file WHERE m.id = file.moment_id) images
       FROM moment m
       LEFT JOIN users u ON m.user_id = u.id
-      WHERE m.id = ?;
+      LEFT JOIN moment_label ml ON m.id = ml.moment_id
+      LEFT JOIN label l ON ml.label_id = l.id
+      WHERE m.id = ?
+      GROUP BY m.id;
     `
-    const [result] = await connection.execute(statement, [id])
+    try {
+      const [result] = await connection.execute(statement, [id])
     return result
+    } catch (error) {
+      console.log(error)
+    }
   }
   async getMomentList({ pageNum, pageSize }) {
     const statement = `
-      ${sqlFragment}
+      SELECT 
+        m.id id, m.content content, m.createAt createTime, m.updateAt updateTime, 
+        JSON_OBJECT("id", u.id, "username", u.username, "avatar", u.avatar_url) user,
+        (SELECT COUNT(*) FROM comment c WHERE c.moment_id = m.id) commentCount,
+        (SELECT COUNT(*) FROM moment_label ml WHERE ml.moment_id = m.id) labelCount,
+        (SELECT JSON_ARRAYAGG(CONCAT('${APP_HOST}:${APP_PORT}/moment/images/', file.filename)) FROM file WHERE m.id = file.moment_id) images
+      FROM moment m
+      LEFT JOIN users u ON m.user_id = u.id
       LIMIT ?, ?;
     `
     const [result] = await connection.execute(statement, [(pageSize * (pageNum - 1)).toString(), pageSize])
